@@ -1,0 +1,45 @@
+"""Central configuration for the Mavericks Weakness Finder backend."""
+import os
+
+# Dallas Mavericks
+TEAM_ID = 1610612742
+TEAM_ABBR = "DAL"
+TEAM_NAME = "Dallas Mavericks"
+
+# Most recent completed season as of the 2026 offseason.
+# Override with env var SEASON (format "2025-26") to run a different season.
+SEASON = os.environ.get("SEASON", "2025-26")
+SEASON_TYPE = "Regular Season"
+
+# nba_api can be slow/flaky; give requests room and be polite between calls.
+NBA_TIMEOUT = int(os.environ.get("NBA_TIMEOUT", "60"))
+NBA_SLEEP = float(os.environ.get("NBA_SLEEP", "0.6"))  # seconds between live calls
+
+# --- Cache ---------------------------------------------------------------
+# User chose SQLite (no MySQL installed). Schema is portable to MySQL; see README.
+CACHE_DB = os.environ.get("CACHE_DB", os.path.join(os.path.dirname(__file__), "cache.db"))
+# TTLs in seconds. Season stats change rarely in the offseason -> long TTL.
+TTL_ROSTER = 24 * 3600
+TTL_LEAGUE_STATS = 12 * 3600
+TTL_POSITIONS = 24 * 3600
+TTL_SHOTCHART = 24 * 3600
+
+# --- Weakness engine thresholds -----------------------------------------
+# Comparison pool = league "rotation" players (stable per-game samples).
+POOL_MIN_MINUTES = 15.0
+POOL_MIN_GAMES = 20
+
+# A Mavericks player is analyzed only with enough sample; below this we still
+# report but tag the result as low-confidence.
+PLAYER_MIN_GAMES = 10
+LOW_SAMPLE_GAMES = 25
+LOW_SAMPLE_MINUTES = 12.0
+
+# Weakness score (0-100) = how far into the "bad" tail a player sits.
+WEAKNESS_FLAG_SCORE = 65.0     # at/above this we call it a weakness
+SEVERE_SCORE = 85.0
+NOTABLE_SCORE = 72.0
+
+# Shot-zone weakness: need real volume + a real deficit vs league average.
+ZONE_MIN_ATTEMPTS = 20
+ZONE_MIN_DEFICIT = 0.03        # 3 percentage points below league FG% in that zone

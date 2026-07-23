@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(python \"C:\\\\Users\\\\sathv\\\\OneDrive\\\\Documents\\\\mavericks-scouting-dashboard\\\\backend\\\\probe_step1.py\")",
+      "PowerShell(python \"C:\\\\Users\\\\sathv\\\\OneDrive\\\\Documents\\\\mavericks-scouting-dashboard\\\\backend\\\\probe_fields.py\")",
+      "PowerShell(python \"C:\\\\Users\\\\sathv\\\\OneDrive\\\\Documents\\\\mavericks-scouting-dashboard\\\\backend\\\\test_metrics.py\")",
+      "PowerShell(python -c \"import sys; sys.path.insert\\(0,'C:/Users/sathv/OneDrive/Documents/mavericks-scouting-dashboard/backend'\\); import cache; [print\\(f\\\\\"{i['key']:35} fresh={i['fresh']} expires_in={i['expires_in_sec']/3600:.1f}h\\\\\"\\) for i in cache.info\\(\\)]\")",
+      "PowerShell(python -m pip install flask flask-cors 2>&1 | Select-Object -Last 6)",
+      "Bash(python -c \"import flask, flask_cors; print\\('flask', flask.__version__, '| flask_cors ok'\\)\")",
+      "Bash(python -c \"import cache; [print\\(i['key'], 'fresh=' + str\\(i['fresh']\\)\\) for i in cache.info\\(\\)]\")",
+      "Bash(python app.py)",
+      "Bash(echo \"started pid $!\")",
+      "Bash(curl -s http://127.0.0.1:5001/api/health)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('status',d['status'],'season',d['season'],'cache_entries',len\\(d['cache_entries']\\)\\)\")",
+      "Bash(curl -s http://127.0.0.1:5001/api/roster)",
+      "Bash(python -c ' *)",
+      "Bash(curl -s http://127.0.0.1:5001/api/player/202691)",
+      "Bash(curl -s http://127.0.0.1:5001/api/team-weaknesses)",
+      "Bash(curl -s http://127.0.0.1:5001/api/metrics)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(len\\(d['metrics']\\),'metrics across',len\\(d['categories']\\),'categories'\\)\")",
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(rm -f src/App.css src/assets/react.svg public/vite.svg)",
+      "Bash(rmdir src/assets)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(rm -rf frontend/src/assets)",
+      "Bash(mv backend/probe_step1.py backend/verify_data_pull.py)",
+      "Bash(grep -rl \"assets/\" frontend/src)",
+      "Bash(curl -s -o /dev/null -w \"roster HTTP %{http_code}\\\\n\" http://127.0.0.1:5001/api/roster)",
+      "Bash(curl -s -o /dev/null -w \"app HTTP %{http_code}\\\\n\" http://localhost:5173)"
+    ]
+  }
+}
