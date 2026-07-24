@@ -1,30 +1,105 @@
-import { PercentileBar, SeverityBadge, Stat } from "../ui.jsx";
+import {
+  PercentileStrip,
+  StripLegend,
+  SeverityBadge,
+  Stat,
+  medianDelta,
+  poolText,
+  ord,
+} from "../ui.jsx";
+
+// Headline stats that map onto a graded metric, so the summary line can carry
+// the same severity signal as the breakdown below it.
+const STAT_METRIC = { "3P%": "fg3_pct", "TS%": "ts_pct" };
 
 function MetricRow({ m }) {
   if (!m.applicable) {
     return (
-      <div className="mrow na">
-        <div className="mrow-label">{m.label}</div>
-        <div className="mrow-val">{m.display}</div>
-        <div className="mrow-na">not compared — {m.reason}</div>
+      <div className="mrow mrow--na">
+        <div className="mrow-label">
+          <span className="mrow-name">{m.label}</span>
+        </div>
+        <div className="mrow-value">
+          <span className="mrow-val">{m.display}</span>
+        </div>
+        <div className="mrow-dist mrow-dist--na">not compared — {m.reason}</div>
       </div>
     );
   }
+
+  const delta = medianDelta(m);
+  const scope = m.position_relative ? `vs ${m.pool_scope}` : null;
+
   return (
     <div className={`mrow ${m.is_weakness ? "is-weak" : ""}`}>
       <div className="mrow-label">
-        {m.label} {m.is_weakness && <SeverityBadge severity={m.severity} />}
-        <small>
+        <span className="mrow-name">
+          {m.label}
+          {m.is_weakness && <SeverityBadge severity={m.severity} />}
+        </span>
+        <span className="mrow-desc">
           {m.desc}
-          {m.position_relative ? " · vs " + m.pool_scope : ""}
-        </small>
+          {scope ? ` · ${scope}` : ""}
+        </span>
       </div>
-      <div className="mrow-val">{m.display}</div>
-      <PercentileBar percentile={m.percentile} />
-      <div className="mrow-median">
-        {m.percentile.toFixed(0)}th pct
-        <br />
-        <span className="small">lg med {m.league_median_display}</span>
+
+      <div className="mrow-value">
+        <span className="mrow-val">{m.display}</span>
+        {delta && (
+          <span
+            className={`mrow-delta ${
+              m.is_weakness ? `is-${m.severity}` : delta.worse ? "" : "is-ok"
+            }`}
+          >
+            {delta.below ? "▼" : "▲"} {delta.mag} vs med
+          </span>
+        )}
+      </div>
+
+      <div className="mrow-dist">
+        <PercentileStrip percentile={m.percentile} isWeakness={m.is_weakness} />
+        <div className="mrow-caption">
+          <span className="mrow-pct">{ord(m.percentile)}</span> pctile · vs{" "}
+          {poolText(m)} · med {m.league_median_display}
+        </div>
+
+        {/* hover reveals the full supporting detail behind the flag */}
+        <div className="mrow-tip" role="tooltip">
+          <div className="tip-head">{m.label}</div>
+          <dl className="tip-grid">
+            <dt>Percentile</dt>
+            <dd>
+              {ord(m.percentile)} of {poolText(m)}
+            </dd>
+            <dt>This player</dt>
+            <dd>{m.display}</dd>
+            <dt>League median</dt>
+            <dd>
+              {m.league_median_display}
+              {delta && (
+                <span className="tip-gap">
+                  {" "}
+                  ({delta.worse ? "−" : "+"}
+                  {delta.mag})
+                </span>
+              )}
+            </dd>
+            <dt>Compared</dt>
+            <dd>
+              {m.position_relative
+                ? `within ${m.pool_scope}s`
+                : "league-wide"}
+            </dd>
+            {m.is_weakness && (
+              <>
+                <dt>Flag</dt>
+                <dd className={`tip-sev is-${m.severity}`}>
+                  {m.severity} · score {m.weakness_score}/100
+                </dd>
+              </>
+            )}
+          </dl>
+        </div>
       </div>
     </div>
   );
@@ -32,31 +107,41 @@ function MetricRow({ m }) {
 
 function ShotZones({ zones }) {
   if (!zones || zones.length === 0) return null;
+  const weak = zones.filter((z) => z.is_weakness).length;
   return (
     <div className="section">
-      <h2>Shooting by court zone</h2>
-      <p className="page-sub" style={{ marginBottom: 12 }}>
-        Field-goal % per zone vs the league average for that zone. Zones flagged
-        red are high-volume spots where the player shoots meaningfully below average.
+      <div className="section-head">
+        <h2>Shooting by court zone</h2>
+        <span className="section-note">
+          {weak > 0
+            ? `${weak} high-volume zone${weak > 1 ? "s" : ""} below league`
+            : "no zone flagged"}
+        </span>
+      </div>
+      <p className="page-sub tight">
+        FG% per zone vs the league average for that spot. A zone is flagged only
+        with real volume (20+ attempts) and a 3+ point deficit — a shot the
+        defense can live with.
       </p>
       <div className="zones">
         {zones.map((z) => {
           const below = z.deficit != null && z.deficit > 0;
           return (
             <div className={`zone ${z.is_weakness ? "is-weak" : ""}`} key={z.zone}>
-              <div className="zone-name">{z.zone}</div>
-              <div className="zone-nums">
-                <span>
-                  <b>{z.fg_pct_display}</b> ({z.fgm}/{z.fga})
-                </span>
-                <span className="lg">lg {z.league_fg_pct_display}</span>
+              <div className="zone-top">
+                <span className="zone-name">{z.zone}</span>
+                {z.deficit != null && (
+                  <span className={`zone-cmp ${below ? "below" : "above"}`}>
+                    {below ? "▼" : "▲"} {Math.abs(z.deficit * 100).toFixed(1)} pts
+                  </span>
+                )}
               </div>
-              {z.deficit != null && (
-                <div className={`zone-cmp ${below ? "below" : "above"}`}>
-                  {below ? "▼" : "▲"} {Math.abs(z.deficit * 100).toFixed(1)} pts{" "}
-                  {below ? "below" : "above"} league
-                </div>
-              )}
+              <div className="zone-nums">
+                <span className="zone-pct">{z.fg_pct_display}</span>
+                <span className="zone-att">
+                  {z.fgm}/{z.fga} · lg {z.league_fg_pct_display}
+                </span>
+              </div>
             </div>
           );
         })}
@@ -67,6 +152,19 @@ function ShotZones({ zones }) {
 
 export default function PlayerDetail({ data, onBack }) {
   const h = data.headline || {};
+
+  // index breakdown metrics so the headline line can flag graded stats
+  const byKey = {};
+  (data.breakdown || []).forEach((cat) =>
+    cat.metrics.forEach((m) => {
+      byKey[m.key] = m;
+    })
+  );
+  const flagFor = (label) => {
+    const m = byKey[STAT_METRIC[label]];
+    return m && m.applicable && m.is_weakness ? m.severity : null;
+  };
+
   return (
     <div className="page">
       <button className="back-btn" onClick={onBack}>
@@ -76,9 +174,7 @@ export default function PlayerDetail({ data, onBack }) {
       <div className="detail-head">
         <div>
           <h1>
-            {data.number != null && (
-              <span className="muted">#{data.number} </span>
-            )}
+            {data.number != null && <span className="muted">#{data.number} </span>}
             {data.name}
           </h1>
           <div className="detail-meta">
@@ -87,6 +183,14 @@ export default function PlayerDetail({ data, onBack }) {
             {data.weight} lb · age {data.age} · {data.experience} yr exp
           </div>
         </div>
+        {data.analyzable && (
+          <div className="detail-verdict">
+            <span className="verdict-n">{data.weaknesses.length}</span>
+            <span className="verdict-l">
+              flagged weakness{data.weaknesses.length === 1 ? "" : "es"}
+            </span>
+          </div>
+        )}
       </div>
 
       {!data.analyzable ? (
@@ -102,18 +206,30 @@ export default function PlayerDetail({ data, onBack }) {
             <Stat k="RPG" v={h.REB_display} />
             <Stat k="APG" v={h.AST_display} />
             <Stat k="FG%" v={h.FG_PCT_display} />
-            <Stat k="3P%" v={h.FG3_PCT_display} />
-            <Stat k="TS%" v={h.TS_PCT_display} />
+            <Stat k="3P%" v={h.FG3_PCT_display} flag={flagFor("3P%")} />
+            <Stat k="TS%" v={h.TS_PCT_display} flag={flagFor("TS%")} />
             <Stat k="USG%" v={h.USG_PCT_display} />
             <Stat k="+/-" v={h.PLUS_MINUS_display} />
           </div>
 
           <div className="section">
-            <h2>Key weaknesses ({data.weaknesses.length})</h2>
+            <div className="section-head">
+              <h2>Key weaknesses</h2>
+              <span className="section-note">
+                ranked league-wide, position-adjusted where noted
+              </span>
+            </div>
             {data.weaknesses.length === 0 ? (
-              <p className="muted">No metric fell into the weakness range — a well-rounded profile.</p>
+              <p className="muted tight">
+                No metric fell into the weakness range — a well-rounded profile.
+              </p>
             ) : (
-              data.weaknesses.map((m) => <MetricRow key={m.key} m={m} />)
+              <>
+                <StripLegend className="section-legend" />
+                {data.weaknesses.map((m) => (
+                  <MetricRow key={m.key} m={m} />
+                ))}
+              </>
             )}
           </div>
 
@@ -123,7 +239,8 @@ export default function PlayerDetail({ data, onBack }) {
               <div className="chips">
                 {data.strengths.map((s) => (
                   <span className="chip" key={s.key}>
-                    <b>{s.label}</b> {s.display} · {s.percentile.toFixed(0)}th pct
+                    <b>{s.label}</b> {s.display}
+                    <span className="chip-pct">{ord(s.percentile)}</span>
                   </span>
                 ))}
               </div>

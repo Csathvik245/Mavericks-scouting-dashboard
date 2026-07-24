@@ -28,7 +28,16 @@
       "Bash(mv backend/probe_step1.py backend/verify_data_pull.py)",
       "Bash(grep -rl \"assets/\" frontend/src)",
       "Bash(curl -s -o /dev/null -w \"roster HTTP %{http_code}\\\\n\" http://127.0.0.1:5001/api/roster)",
-      "Bash(curl -s -o /dev/null -w \"app HTTP %{http_code}\\\\n\" http://localhost:5173)"
+      "Bash(curl -s -o /dev/null -w \"app HTTP %{http_code}\\\\n\" http://localhost:5173)",
+      "Read(//c/Program Files/Google/Chrome/Application/**)",
+      "Read(//c/Program Files \\\\\\(x86\\\\\\)/Google/Chrome/Application/**)",
+      "Read(//c/Program Files/Microsoft/Edge/Application/**)",
+      "Bash('/c/Program Files/Google/Chrome/Application/chrome.exe' --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=1180,760 --virtual-time-budget=4000 --screenshot=C:/Users/sathv/AppData/Local/Temp/claude/C--Users-sathv-OneDrive-Documents-mavericks-scouting-dashboard/b139bf3a-b182-4043-8188-306ff1d937a1/scratchpad/player_zoom.png http://localhost:5174/preview.html?view=player)",
+      "Bash(echo \"exit: $?\")",
+      "Bash('/c/Program Files/Google/Chrome/Application/chrome.exe' --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=1180,1150 --virtual-time-budget=4000 --screenshot=C:/Users/sathv/AppData/Local/Temp/claude/C--Users-sathv-OneDrive-Documents-mavericks-scouting-dashboard/b139bf3a-b182-4043-8188-306ff1d937a1/scratchpad/roster.png http://localhost:5174/preview.html?view=roster)",
+      "Bash('/c/Program Files/Google/Chrome/Application/chrome.exe' --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=1180,900 --virtual-time-budget=4000 --screenshot=C:/Users/sathv/AppData/Local/Temp/claude/C--Users-sathv-OneDrive-Documents-mavericks-scouting-dashboard/b139bf3a-b182-4043-8188-306ff1d937a1/scratchpad/team.png http://localhost:5174/preview.html?view=team)",
+      "Bash('/c/Program Files/Google/Chrome/Application/chrome.exe' --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=1180,620 --virtual-time-budget=4000 --screenshot=C:/Users/sathv/AppData/Local/Temp/claude/C--Users-sathv-OneDrive-Documents-mavericks-scouting-dashboard/b139bf3a-b182-4043-8188-306ff1d937a1/scratchpad/player_delta.png http://localhost:5174/preview.html?view=player)",
+      "Bash('/c/Program Files/Google/Chrome/Application/chrome.exe' --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=1180,900 --virtual-time-budget=4000 --screenshot=C:/Users/sathv/AppData/Local/Temp/claude/C--Users-sathv-OneDrive-Documents-mavericks-scouting-dashboard/b139bf3a-b182-4043-8188-306ff1d937a1/scratchpad/player_tip.png 'http://localhost:5174/preview.html?view=player&tip=1')"
     ]
   }
 }

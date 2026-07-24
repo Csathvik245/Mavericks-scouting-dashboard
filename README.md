@@ -8,7 +8,7 @@ they fall into the "bad" tail of each metric, breaks their shooting down by cour
 zone, and rolls everything up into a team-wide view of shared soft spots.
 
 > Data is live from the NBA Stats API via [`nba_api`](https://github.com/swar/nba_api).
-> Nothing here is mocked or hard-coded — the roster, stats, and shot charts are pulled
+> Nothing here is mocked or hard-coded, the roster, stats, and shot charts are pulled
 > for the configured season (default **2025-26**) and cached locally.
 
 ![Roster view](docs/roster.png)
@@ -80,7 +80,7 @@ nba_api (stats.nba.com)
 
 The original spec asked for **MySQL** caching. No MySQL server is installed on the
 target machine (no service, no `Program Files`, no XAMPP/WAMP), so this build uses
-**SQLite** — it ships with Python, needs zero setup, and is functionally identical for
+**SQLite**, it ships with Python, needs zero setup, and is functionally identical for
 this read-mostly cache.
 
 The cache is deliberately isolated in a single module (`backend/cache.py`) with a
@@ -128,12 +128,23 @@ python -m pip install -r requirements.txt
 python verify_data_pull.py     # prints the real Mavericks roster + stats
 python test_metrics.py         # prints computed weaknesses per player
 
+# seed the cache ONCE so no user request ever hits stats.nba.com:
+python seed_cache.py           # pulls league stats, positions + every player's shot chart
+
 # start the API
 python app.py                  # http://127.0.0.1:5001
 ```
 
-The first API call warms the cache (pulls league stats + all 30 rosters for positions);
-this takes ~30–60s once, then everything is served from `cache.db`.
+**Seed the cache first.** `seed_cache.py` pulls everything the app serves —
+roster, league Base/Advanced stats, all-30-roster positions, and a **shot chart
+for every player on the roster** — into `cache.db` in one ~30s batch. This
+matters because shot charts are otherwise fetched lazily, one player at a time,
+on the first visit to each detail page; without seeding, that first
+`/api/player/<id>` request makes a live `shotchartdetail` call to stats.nba.com
+and the page hangs on "Loading player…". After seeding, every request (roster
+and detail) is served entirely from SQLite. Re-run with `--force` to re-pull, or
+`--season 2024-25` for another season. (If you skip it, the API still self-warms
+on first use — just slowly, and detail pages pay the live shot-chart cost.)
 
 ### 2. Frontend (Vite dev server on :5173)
 
@@ -186,10 +197,10 @@ also defined in `config.py`.
 
 - Live from **stats.nba.com** via `nba_api`. That endpoint is occasionally slow or
   rate-limits; the SQLite cache and the polite inter-call delay keep usage light.
-- `DEF_RATING` is an on-court team-context stat, not a pure individual measure — it is
+- `DEF_RATING` is an on-court team-context stat, not a pure individual measure, it is
   included as a directional signal and labelled as such in the UI.
 - Position-relative comparison uses a coarse 3-bucket scheme (Guard / Forward / Big)
   parsed from official roster positions.
-- Weakness scores are **relative**, not absolute judgments — "bottom third of rotation
+- Weakness scores are **relative**, not absolute judgments, "bottom third of rotation
   players at this metric," shown alongside the raw value and league median for context.
 ```

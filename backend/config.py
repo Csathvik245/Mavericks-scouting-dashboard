@@ -18,11 +18,15 @@ NBA_SLEEP = float(os.environ.get("NBA_SLEEP", "0.6"))  # seconds between live ca
 # --- Cache ---------------------------------------------------------------
 # User chose SQLite (no MySQL installed). Schema is portable to MySQL; see README.
 CACHE_DB = os.environ.get("CACHE_DB", os.path.join(os.path.dirname(__file__), "cache.db"))
-# TTLs in seconds. Season stats change rarely in the offseason -> long TTL.
-TTL_ROSTER = 24 * 3600
-TTL_LEAGUE_STATS = 12 * 3600
-TTL_POSITIONS = 24 * 3600
-TTL_SHOTCHART = 24 * 3600
+# TTLs in seconds. The default SEASON is a *completed* season, so its data is
+# immutable — seed the cache once (see seed_cache.py) and it should stay valid,
+# not silently re-expire and force live nba_api calls on a user request. Long
+# TTL by default; drop CACHE_TTL for an in-progress season you want to refresh.
+CACHE_TTL = int(os.environ.get("CACHE_TTL", str(30 * 24 * 3600)))  # 30 days
+TTL_ROSTER = CACHE_TTL
+TTL_LEAGUE_STATS = CACHE_TTL
+TTL_POSITIONS = CACHE_TTL
+TTL_SHOTCHART = CACHE_TTL
 
 # --- Weakness engine thresholds -----------------------------------------
 # Comparison pool = league "rotation" players (stable per-game samples).
