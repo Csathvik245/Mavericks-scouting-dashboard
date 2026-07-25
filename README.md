@@ -11,15 +11,15 @@ zone, and rolls everything up into a team-wide view of shared soft spots.
 > Nothing here is mocked or hard-coded, the roster, stats, and shot charts are pulled
 > for the configured season (default **2025-26**) and cached locally.
 
-**Roster — every player ranked by weakness count & severity**
+**Roster - every player ranked by weakness count & severity**
 
 ![Roster view](docs/screenshot-roster.png)
 
-**Player detail — full weakness breakdown, relative strengths & shot-zone deficits**
+**Player detail - full weakness breakdown, relative strengths & shot-zone deficits**
 
 ![Player detail view](docs/screenshot-player-detail.png)
 
-**Team Weak Spots — the roster's shared soft spots, most-shared first**
+**Team Weak Spots - the roster's shared soft spots, most-shared first**
 
 ![Team Weak Spots view](docs/screenshot-team-weakspots.png)
 
@@ -31,12 +31,12 @@ For each player the engine answers: *"On which metrics is this player meaningful
 below the players they should be compared to?"*
 
 - **Percentile ranking** against a comparison pool of league **rotation players**
-  (≥ 15 MPG and ≥ 20 GP — 350 players in 2025-26).
+  (≥ 15 MPG and ≥ 20 GP, 350 players in 2025-26).
 - **Weakness score (0–100):** how far into the *bad* tail the player sits for a
   metric. `≥ 65` is flagged; tiers are **mild (65)**, **notable (72)**, **severe (85)**.
 - **Position-aware comparison.** Rebounding, playmaking, steals, blocks and fouls are
   compared *within the player's position bucket* (Guard / Forward / Big), derived from
-  all 30 team rosters — so a center isn't dinged for a guard-like assist rate. Shooting,
+  all 30 team rosters, so a center isn't dinged for a guard-like assist rate. Shooting,
   efficiency and ball-security metrics are compared league-wide.
 - **Volume guards** prevent false positives on tiny samples (e.g. 3-point % is only
   judged for players attempting ≥ 2.0 threes/game; free-throw rate needs ≥ 5 FGA/game).
@@ -145,16 +145,16 @@ python seed_cache.py           # pulls league stats, positions + every player's 
 python app.py                  # http://127.0.0.1:5001
 ```
 
-**Seed the cache first.** `seed_cache.py` pulls everything the app serves —
+**Seed the cache first.** `seed_cache.py` pulls everything the app serves,
 roster, league Base/Advanced stats, all-30-roster positions, and a **shot chart
-for every player on the roster** — into `cache.db` in one ~30s batch. This
+for every player on the roster**, into `cache.db` in one ~30s batch. This
 matters because shot charts are otherwise fetched lazily, one player at a time,
 on the first visit to each detail page; without seeding, that first
 `/api/player/<id>` request makes a live `shotchartdetail` call to stats.nba.com
 and the page hangs on "Loading player…". After seeding, every request (roster
 and detail) is served entirely from SQLite. Re-run with `--force` to re-pull, or
 `--season 2024-25` for another season. (If you skip it, the API still self-warms
-on first use — just slowly, and detail pages pay the live shot-chart cost.)
+on first use, just slowly, and detail pages pay the live shot-chart cost.)
 
 ### 2. Frontend (Vite dev server on :5173)
 
