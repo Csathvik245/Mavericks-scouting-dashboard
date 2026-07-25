@@ -11,7 +11,17 @@ zone, and rolls everything up into a team-wide view of shared soft spots.
 > Nothing here is mocked or hard-coded, the roster, stats, and shot charts are pulled
 > for the configured season (default **2025-26**) and cached locally.
 
-![Roster view](docs/roster.png)
+**Roster — every player ranked by weakness count & severity**
+
+![Roster view](docs/screenshot-roster.png)
+
+**Player detail — full weakness breakdown, relative strengths & shot-zone deficits**
+
+![Player detail view](docs/screenshot-player-detail.png)
+
+**Team Weak Spots — the roster's shared soft spots, most-shared first**
+
+![Team Weak Spots view](docs/screenshot-team-weakspots.png)
 
 ---
 
