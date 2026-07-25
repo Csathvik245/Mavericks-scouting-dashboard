@@ -92,7 +92,7 @@ export default function App() {
         </div>
       </nav>
 
-      {error && <div className="error">Error: {error}. Is the backend running on :5001?</div>}
+      {error && <div className="error">Error: {error}. Is the backend API reachable?</div>}
       {loading && <div className="loading">Loading Mavericks data…</div>}
 
       {!loading && !error && (

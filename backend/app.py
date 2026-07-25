@@ -10,6 +10,8 @@ Endpoints:
   GET  /api/metrics             the metric catalog (methodology reference)
   POST /api/refresh             clear the cache (force fresh nba_api pull)
 """
+import os
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -20,7 +22,8 @@ import nba_client
 import service
 
 app = Flask(__name__)
-CORS(app)
+# Restrict to the deployed frontend origin(s) via CORS_ORIGINS; defaults to "*".
+CORS(app, origins=config.CORS_ORIGINS)
 
 
 @app.get("/api/health")
@@ -91,11 +94,20 @@ def metric_catalog():
 
 @app.post("/api/refresh")
 def refresh():
+    # In production the cache is a committed read-only snapshot; clearing it
+    # would leave the app with nothing to serve and no way to re-pull (no live
+    # nba_api access). Disable the destructive refresh in offline mode.
+    if config.OFFLINE:
+        return jsonify({"error": "refresh disabled in offline mode"}), 403
     cache.clear()
     service._engine_cache.update(engine=None, built_at=0)
     return jsonify({"status": "cache cleared"})
 
 
 if __name__ == "__main__":
-    print(f"Mavericks Weakness Finder API  |  season {config.SEASON}")
-    app.run(host="127.0.0.1", port=5001, debug=True)
+    # Local dev only. In production a WSGI server runs `app:app` (see render.yaml);
+    # this block does not execute under gunicorn.
+    port = int(os.environ.get("PORT", "5001"))
+    print(f"Mavericks Weakness Finder API  |  season {config.SEASON}"
+          f"{'  |  OFFLINE' if config.OFFLINE else ''}")
+    app.run(host="127.0.0.1", port=port, debug=True)

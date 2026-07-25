@@ -4,8 +4,10 @@ __pycache__/
 .venv/
 venv/
 
-# SQLite cache (regenerated from nba_api on first run)
-backend/cache.db
+# SQLite cache: committed on purpose as a pre-seeded, read-only snapshot of a
+# completed season. Production (Render) serves it with OFFLINE_CACHE=1 and never
+# calls stats.nba.com (which blocks datacenter IPs). Re-seed with seed_cache.py
+# and commit the refreshed file when you change SEASON. (Not ignored.)
 
 # Node / Vite
 node_modules/

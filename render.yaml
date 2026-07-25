@@ -1,0 +1,18 @@
+# Render Blueprint for the Flask backend.
+# Deploy via  New > Blueprint  pointing at this repo, or create a Web Service
+# manually with the same Root Directory / Build / Start settings shown here.
+services:
+  - type: web
+    name: mavericks-weakness-api
+    runtime: python
+    rootDir: backend           # app.py + cache.db live here
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.4"        # adjust to any version Render offers if needed
+      - key: OFFLINE_CACHE
+        value: "1"             # serve the committed cache.db; never call stats.nba.com
+      - key: CORS_ORIGINS
+        sync: false            # set to your Vercel URL, e.g. https://your-app.vercel.app

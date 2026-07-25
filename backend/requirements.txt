@@ -4,3 +4,5 @@ flask-cors>=6.0
 # pandas / numpy are pulled in transitively by nba_api
 pandas>=2.2
 numpy>=2.1
+# Production WSGI server (Render). Not used by local `python app.py`; Linux-only.
+gunicorn>=23.0

@@ -11,6 +11,7 @@ import sqlite3
 import threading
 import time
 
+import config
 from config import CACHE_DB
 
 _lock = threading.Lock()
@@ -30,7 +31,11 @@ def _conn():
 
 
 def get(key):
-    """Return the cached (deserialized) value, or None if missing/expired."""
+    """Return the cached (deserialized) value, or None if missing/expired.
+
+    In OFFLINE mode expiry is ignored: the committed cache.db is a static
+    snapshot of a completed season, so a stored value is always served.
+    """
     with _lock, _conn() as c:
         row = c.execute(
             "SELECT value, expires_at FROM cache WHERE cache_key = ?", (key,)
@@ -38,7 +43,7 @@ def get(key):
         if not row:
             return None
         value, expires_at = row
-        if expires_at < time.time():
+        if not config.OFFLINE and expires_at < time.time():
             c.execute("DELETE FROM cache WHERE cache_key = ?", (key,))
             return None
         return json.loads(value)
@@ -55,10 +60,20 @@ def set(key, value, ttl):
 
 
 def cached(key, ttl, producer):
-    """Return cached value for `key`, else call producer(), store, return it."""
+    """Return cached value for `key`, else call producer(), store, return it.
+
+    In OFFLINE mode we never call the producer (no live nba_api access): a miss
+    raises, so a mis-seeded cache fails loudly instead of hanging on a network
+    call that can't succeed from a datacenter IP.
+    """
     hit = get(key)
     if hit is not None:
         return hit
+    if config.OFFLINE:
+        raise RuntimeError(
+            f"OFFLINE cache miss for '{key}'. The committed cache.db is missing "
+            f"this entry — re-run seed_cache.py and commit the refreshed cache.db."
+        )
     value = producer()
     set(key, value, ttl)
     return value

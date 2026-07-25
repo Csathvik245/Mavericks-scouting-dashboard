@@ -15,6 +15,19 @@ SEASON_TYPE = "Regular Season"
 NBA_TIMEOUT = int(os.environ.get("NBA_TIMEOUT", "60"))
 NBA_SLEEP = float(os.environ.get("NBA_SLEEP", "0.6"))  # seconds between live calls
 
+# --- Deployment ----------------------------------------------------------
+# OFFLINE_CACHE: serve strictly from the committed cache.db, never call
+# stats.nba.com. REQUIRED in production (Render): stats.nba.com blocks
+# datacenter IPs and Render's filesystem is ephemeral, so a live pull would
+# hang. In offline mode the cache ignores TTL expiry and /api/refresh is
+# disabled. Leave unset locally for the normal TTL + live-refresh behavior.
+OFFLINE = os.environ.get("OFFLINE_CACHE", "").lower() in ("1", "true", "yes", "on")
+
+# CORS_ORIGINS: comma-separated list of allowed origins for the browser
+# frontend (e.g. "https://your-app.vercel.app"). Defaults to "*" so it works
+# before you know the deployed URL; set it to your Vercel domain in production.
+CORS_ORIGINS = [o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()]
+
 # --- Cache ---------------------------------------------------------------
 # User chose SQLite (no MySQL installed). Schema is portable to MySQL; see README.
 CACHE_DB = os.environ.get("CACHE_DB", os.path.join(os.path.dirname(__file__), "cache.db"))
